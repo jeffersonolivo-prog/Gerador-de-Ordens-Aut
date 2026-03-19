@@ -229,21 +229,21 @@ export const OPPage: React.FC<OPPageProps> = ({ order, item, projetista, pageNum
             />
             
             {/* Drawing Info Overlay (Legend) */}
-            <div className="absolute bottom-4 right-4 bg-white/90 border border-black p-3 text-[9pt] font-mono leading-tight shadow-sm min-w-[250px] z-20">
-              <div className="mb-1">
+            <div className="absolute bottom-4 right-4 bg-white border border-black p-3 text-[9pt] font-mono leading-tight shadow-sm min-w-[250px] z-20">
+              <div className="mb-1 text-black">
                 <span className="font-bold">ORDEM DE FABRICAÇÃO:</span> {order.orderNumber}
               </div>
-              <div className="mb-1">
+              <div className="mb-1 text-black">
                 <span className="font-bold">CLIENTE:</span> {order.clientName.toUpperCase()}
               </div>
-              <div className="flex justify-between mb-1">
+              <div className="flex justify-between mb-1 text-black">
                 <div><span className="font-bold">VENDEDOR:</span> {order.seller.toUpperCase()}</div>
                 <div><span className="font-bold">DATA:</span> {order.printDate}</div>
               </div>
-              <div className="mb-2">
+              <div className="mb-2 text-black">
                 <span className="font-bold">PROJETISTA:</span> {projetista.toUpperCase() || '____________________'}
               </div>
-              <div className="text-[12pt] font-bold border-t border-black pt-1 mt-1">
+              <div className="text-[12pt] font-bold border-t border-black pt-1 mt-1 text-black">
                 QUANTIDADE = {formatQuantity(Math.floor(Number(item.quantity)), item.unit)}
               </div>
             </div>

@@ -83,86 +83,6 @@ export default function App() {
     multiple: false,
   } as any);
 
-  const handlePrint = () => {
-    const element = document.getElementById("op-container");
-
-    if (!element) {
-      alert("Erro: conteúdo de impressão não encontrado.");
-      return;
-    }
-
-    const printWindow = window.open("", "_blank");
-
-    if (!printWindow) {
-      alert("Não foi possível abrir a janela de impressão. Verifique se o bloqueador de pop-ups está ativado.");
-      return;
-    }
-
-    const styles = `
-      <style>
-        body {
-          margin: 0;
-          padding: 0;
-          background: white;
-          font-family: Arial, sans-serif;
-        }
-
-        .page {
-          width: 210mm;
-          height: 297mm;
-          margin: 0 auto;
-          page-break-after: always;
-          box-sizing: border-box;
-          position: relative;
-        }
-
-        @page {
-          size: A4;
-          margin: 0;
-        }
-
-        /* Import Tailwind styles for the cloned content */
-        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
-        
-        /* Custom styles to match the app's look */
-        .border-black { border-color: #000 !important; }
-        .border-x { border-left-width: 1px !important; border-right-width: 1px !important; }
-        .border-b { border-bottom-width: 1px !important; }
-        .border-r { border-right-width: 1px !important; }
-        .font-bold { font-weight: bold !important; }
-        .text-center { text-align: center !important; }
-        .flex { display: flex !important; }
-        .grid { display: grid !important; }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        
-        /* Ensure stamp rotation in print */
-        .absolute { position: absolute !important; }
-        .rotate-\[-15deg\] { transform: rotate(-15deg) !important; }
-      </style>
-    `;
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Impressão OP - Pedido ${orderData?.orderNumber}</title>
-          ${styles}
-        </head>
-        <body>
-          ${element.innerHTML}
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
-  };
-
   const handleDownloadPDF = async () => {
     if (!orderData) return;
     
@@ -182,13 +102,14 @@ export default function App() {
       const opt = {
         margin: 0,
         filename: `OP_Pedido_${orderData.orderNumber}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 2, 
+          scale: 2, // Higher scale for better quality
           useCORS: true, 
           logging: false,
           letterRendering: true,
           allowTaint: false,
+          imageTimeout: 0, // Wait indefinitely for images to load
           backgroundColor: '#ffffff',
           scrollX: 0,
           scrollY: 0,
@@ -200,22 +121,101 @@ export default function App() {
               container.style.padding = '0';
               container.style.width = '210mm';
               
-              // Ensure all pages are visible for capture
               const pages = container.querySelectorAll('.pdf-page');
               pages.forEach((page: any) => {
                 page.style.marginBottom = '0';
                 page.style.boxShadow = 'none';
                 page.style.border = 'none';
-                page.style.height = '296mm'; // Safer height to avoid extra pages
+                page.style.height = '296mm';
+              });
+
+              // Add a style tag to the cloned document to override modern colors globally in the clone
+              const styleTag = clonedDoc.createElement('style');
+              styleTag.innerHTML = `
+                * {
+                  color-scheme: light !important;
+                }
+                #op-container, #op-container * {
+                  --color-emerald-600: #059669 !important;
+                  --color-stone-100: #f5f5f4 !important;
+                  --color-stone-200: #e7e5e4 !important;
+                  --color-stone-500: #78716c !important;
+                  --color-stone-600: #57534e !important;
+                  --color-stone-900: #1c1917 !important;
+                  border-color: currentColor !important;
+                }
+                /* Fix for legend and other potential black elements */
+                .bg-white, [class*="bg-white/"] {
+                  background-color: #ffffff !important;
+                  color: #000000 !important;
+                }
+                .text-black {
+                  color: #000000 !important;
+                }
+              `;
+              clonedDoc.head.appendChild(styleTag);
+
+              // Aggressively remove all oklab/oklch/color-mix references from all style tags
+              const styleTags = clonedDoc.querySelectorAll('style');
+              styleTags.forEach(tag => {
+                try {
+                  tag.innerHTML = tag.innerHTML
+                    .replace(/oklch\([^)]+\)/g, '#000000')
+                    .replace(/oklab\([^)]+\)/g, '#000000')
+                    .replace(/color-mix\([^)]+\)/g, 'currentColor');
+                } catch (e) {
+                  console.warn("Could not clean style tag", e);
+                }
+              });
+
+              // Clean up modern colors that html2canvas doesn't support (oklab, oklch)
+              const allElements = container.querySelectorAll('*');
+              allElements.forEach((el: any) => {
+                try {
+                  const style = window.getComputedStyle(el);
+                  
+                  // html2canvas fails on oklab/oklch. We force standard RGB values.
+                  // Browsers usually return RGB in getComputedStyle even for oklch, 
+                  // but some properties or variables might still leak it.
+                  if (style.color.includes('okl') || style.color.includes('mix')) el.style.color = '#000000';
+                  if (style.backgroundColor.includes('okl') || style.backgroundColor.includes('mix')) el.style.backgroundColor = '#ffffff';
+                  if (style.borderColor.includes('okl') || style.borderColor.includes('mix')) el.style.borderColor = '#000000';
+                  
+                  // Check inline styles too
+                  if (el.style.color.includes('okl') || el.style.color.includes('mix')) el.style.color = '#000000';
+                  if (el.style.backgroundColor.includes('okl') || el.style.backgroundColor.includes('mix')) el.style.backgroundColor = '#ffffff';
+                  if (el.style.borderColor.includes('okl') || el.style.borderColor.includes('mix')) el.style.borderColor = '#000000';
+
+                  // Fix for transparency issues that might render as black
+                  if (style.backgroundColor === 'rgba(0, 0, 0, 0)' || style.backgroundColor === 'transparent') {
+                    if (el.classList.contains('bg-white') || el.classList.contains('bg-stone-50')) {
+                      el.style.backgroundColor = '#ffffff';
+                    }
+                  }
+
+                  el.style.colorScheme = 'light';
+                  
+                  // Also handle SVG properties if any
+                  if (el instanceof SVGElement) {
+                    const fill = style.fill;
+                    const stroke = style.stroke;
+                    if (fill && (fill.includes('okl') || fill.includes('mix'))) el.style.fill = 'currentColor';
+                    if (stroke && (stroke.includes('okl') || stroke.includes('mix'))) el.style.stroke = 'currentColor';
+                  }
+                } catch (e) {
+                  // Ignore errors for individual elements
+                }
               });
             }
           }
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const, compress: true },
         pagebreak: { mode: 'css' as any, after: '.print-break-after' }
       };
 
-      await html2pdfModule().set(opt).from(element).save();
+      // Use worker for better stability and ensure images are loaded
+      const worker = html2pdfModule().set(opt).from(element);
+      await worker.save();
     } catch (err: any) {
       console.error("Erro ao gerar PDF:", err);
       setError(`Erro ao gerar PDF: Verifique se há caracteres especiais ou tente usar 'Imprimir' e 'Salvar como PDF'.`);
@@ -231,17 +231,49 @@ export default function App() {
     setIsProcessingDrawings(true);
     const newDrawings: Record<string, string> = { ...drawings };
     
+    const compressImage = (base64: string): Promise<string> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 2400; // Increased for better resolution
+          const MAX_HEIGHT = 2400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Compress to JPEG with 0.9 quality
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        };
+        img.src = base64;
+      });
+    };
+
     const processFile = async (file: File) => {
-      // Only accept images for speed and stability
       if (!file.type.startsWith('image/')) return;
 
       return new Promise<void>((resolve) => {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           const result = event.target?.result as string;
-          const fileName = file.name.toLowerCase();
+          const compressed = await compressImage(result);
           
-          // Match by code or description
           const matchedItem = orderData.items.find(item => {
             const code = item.code.toLowerCase();
             const desc = item.description.toLowerCase();
@@ -253,7 +285,7 @@ export default function App() {
           });
 
           if (matchedItem) {
-            newDrawings[matchedItem.code] = result;
+            newDrawings[matchedItem.code] = compressed;
           }
           resolve();
         };
@@ -268,44 +300,13 @@ export default function App() {
     setIsProcessingDrawings(false);
   };
 
-  const handleDownloadExcel = () => {
-    if (!orderData) {
-      setError("Nenhum dado de pedido carregado.");
-      return;
-    }
-
-    const items = orderData.items || [];
-    if (items.length === 0) {
-      setError("Não foram encontrados itens no pedido para exportar.");
-      return;
-    }
-
-    console.log("Exportando itens para Excel:", items);
-
-    const data = items.map(item => ({
-      'Pedido': String(orderData.orderNumber || ''),
-      'Cliente': String(orderData.clientName || ''),
-      'Vendedor': String(orderData.seller || ''),
-      'Data Entrega': manualDeliveryDate ? format(parseISO(manualDeliveryDate), 'dd/MM/yyyy') : String(orderData.deliveryDate || ''),
-      'Código': String(item.code || ''),
-      'Descrição': String(item.description || ''),
-      'Quantidade': String(item.quantity || ''),
-      'Unidade': String(item.unit || '')
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Itens do Pedido");
-    
-    XLSX.writeFile(workbook, `Pedido_${orderData.orderNumber || 'Export'}.xlsx`);
-  };
-
   const reset = () => {
     setOrderData(null);
     setView('upload');
     setError(null);
     setManualDeliveryDate('');
     setManualPrintDate('');
+    setDrawings({});
   };
 
   const formattedDeliveryDate = manualDeliveryDate 
@@ -340,13 +341,6 @@ export default function App() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Novo Pedido
-                </button>
-                <button
-                  onClick={handleDownloadExcel}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-full transition-colors"
-                >
-                  <Table className="w-4 h-4" />
-                  Baixar Excel
                 </button>
                 <div className="relative">
                   <input
@@ -396,14 +390,6 @@ export default function App() {
                   )}
                   {isGeneratingPDF ? "Gerando..." : "Salvar PDF"}
                 </button>
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white text-sm font-bold rounded-full hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all active:scale-95"
-                >
-                  <Printer className="w-4 h-4" />
-                  Imprimir
-                </button>
               </>
             )}
           </div>
@@ -411,7 +397,7 @@ export default function App() {
         {view === 'preview' && (
           <div className="max-w-7xl mx-auto px-6 mt-2 text-right print:hidden">
             <p className="text-[10px] text-stone-400 italic">
-              Dica: Se os botões não abrirem o diálogo, use <span className="font-bold">Ctrl + P</span> no teclado.
+              Dica: Se o botão não funcionar, tente reduzir o número de desenhos ou recarregar a página.
             </p>
           </div>
         )}
