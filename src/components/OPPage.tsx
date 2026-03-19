@@ -65,14 +65,12 @@ export const OPPage: React.FC<OPPageProps> = ({ order, item, projetista, pageNum
               <div className="h-20"></div>
             </div>
 
-            {/* "Copia Controlada" Stamp */}
+            {/* "Cópia Controlada" Stamp */}
             <div 
-              className="absolute top-6 right-6 border-[3px] border-gray-300 text-gray-300 px-4 py-1 font-bold text-xl tracking-tighter rounded-sm pointer-events-none"
-              style={{ transform: 'rotate(-15deg)', zIndex: 10 }}
+              className="absolute top-6 right-6 font-bold text-xl tracking-tighter pointer-events-none uppercase"
+              style={{ transform: 'rotate(-15deg)', zIndex: 10, color: '#E5E7EB', opacity: 0.5 }}
             >
-              <div className="border border-gray-300 px-2 py-0.5 uppercase">
-                Copia Controlada
-              </div>
+              Cópia Controlada
             </div>
           </div>
         </div>
