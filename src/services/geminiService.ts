@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
 
 export interface OrderItem {
   code: string;
@@ -21,6 +22,10 @@ export interface OrderData {
 }
 
 export async function extractOrderData(base64Pdf: string): Promise<OrderData | null> {
+  if (!apiKey) {
+    console.error("ERRO: GEMINI_API_KEY não encontrada. Configure a variável de ambiente.");
+    return null;
+  }
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

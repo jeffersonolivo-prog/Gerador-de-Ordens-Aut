@@ -41,7 +41,7 @@ export const OPPage: React.FC<OPPageProps> = ({ order, item, projetista, pageNum
               {itemQtyDisplay} – {item.code} - {item.description.toUpperCase()}
             </div>
             
-            <div className="space-y-1 mb-6 font-bold">
+            <div className="space-y-0.5 mb-6 font-bold">
               <p>Janela de Inspeção – Sim ( ) Não (X)</p>
               <p>Pintura – Sim ( ) Não (X) – Cor: _________________</p>
               <p>Coleta ( ) - Entrega ( ) - Cliente Retira (X)</p>
@@ -61,8 +61,8 @@ export const OPPage: React.FC<OPPageProps> = ({ order, item, projetista, pageNum
             </div>
 
             {/* Space for manual entry */}
-            <div className="mt-4 pt-4">
-              <div className="h-16"></div>
+            <div className="mt-8">
+              <div className="h-20"></div>
             </div>
 
             {/* "Copia Controlada" Stamp */}
@@ -211,7 +211,7 @@ export const OPPage: React.FC<OPPageProps> = ({ order, item, projetista, pageNum
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center mt-auto pt-2 text-[9pt] border-t border-transparent">
+        <div className="flex justify-between items-center mt-auto pt-2 text-[9pt]">
           <div>F07- ORDEM DE SERVIÇO – REV06 – 16/01/2025</div>
           <div className="font-bold uppercase">PG: {pageNumber}/{totalPages}</div>
         </div>

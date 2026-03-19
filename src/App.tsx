@@ -65,7 +65,7 @@ export default function App() {
 
           setView('preview');
         } else {
-          setError('Não foi possível extrair os dados do pedido. Verifique se o PDF é válido.');
+          setError('Não foi possível extrair os dados do pedido. No Vercel, verifique se a variável VITE_GEMINI_API_KEY está configurada corretamente.');
         }
         setIsExtracting(false);
       };
@@ -206,7 +206,7 @@ export default function App() {
                 page.style.marginBottom = '0';
                 page.style.boxShadow = 'none';
                 page.style.border = 'none';
-                page.style.height = '296.5mm'; // Slightly less than 297mm to avoid overflow
+                page.style.height = '296mm'; // Safer height to avoid extra pages
               });
             }
           }

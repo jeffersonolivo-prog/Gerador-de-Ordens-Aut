@@ -101,8 +101,6 @@
 
   /* Remove problematic properties for print */
   * {
-    position: static !important;
-    overflow: visible !important;
     animation: none !important;
     transition: none !important;
   }
