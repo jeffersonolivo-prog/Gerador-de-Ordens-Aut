@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+  /* Emerald Palette */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
+
+  /* Stone Palette */
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e5e4;
+  --color-stone-300: #d6d3d1;
+  --color-stone-400: #a8a29e;
+  --color-stone-500: #78716c;
+  --color-stone-600: #57534e;
+  --color-stone-700: #44403c;
+  --color-stone-800: #292524;
+  --color-stone-900: #1c1917;
+  --color-stone-950: #0c0a09;
+
+  /* Red Palette */
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-800: #991b1b;
+  --color-red-900: #7f1d1d;
+
+  /* Green Palette */
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-200: #bbf7d0;
+  --color-green-300: #86efac;
+  --color-green-400: #4ade80;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+  --color-green-800: #166534;
+  --color-green-900: #14532d;
+
+  /* Gray Palette */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+}
+
+.print-break-after {
+  page-break-after: always;
+  break-after: page;
+}
+
+.pdf-page {
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  page-break-inside: avoid;
+  page-break-after: always;
+}
+
+@media print {
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: white;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* Remove problematic properties for print */
+  * {
+    position: static !important;
+    overflow: visible !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .pdf-page {
+    margin: 0 !important;
+    padding: 10mm !important;
+    height: 297mm !important;
+    width: 210mm !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Force non-oklch colors on the container to be captured */
+#op-container, #op-container * {
+  color-scheme: light;
+  --tw-ring-color: rgba(0,0,0,0) !important;
+  --tw-shadow: 0 0 #0000 !important;
+}
+
+#op-container {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  width: auto !important;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 0 !important;
+}
